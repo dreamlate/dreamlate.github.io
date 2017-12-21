@@ -381,12 +381,14 @@
 <h4 id="非阻塞式IO模型"><a href="#非阻塞式IO模型" class="headerlink" title="非阻塞式IO模型"></a>非阻塞式IO模型<br></h4><p><img src="https://raw.githubusercontent.com/dreamlate/hello-world/master/images/201712181013-io2.png" alt="image"></p>
 <h4 id="IO多路复用模型"><a href="#IO多路复用模型" class="headerlink" title="IO多路复用模型"></a>IO多路复用模型<br></h4><p><img src="https://raw.githubusercontent.com/dreamlate/hello-world/master/images/201712182227-io3.png" alt="image"></p>
 <h4 id="异步IO模型"><a href="#异步IO模型" class="headerlink" title="异步IO模型"></a>异步IO模型</h4><p><img src="https://raw.githubusercontent.com/dreamlate/hello-world/master/images/201712182219-io4.png" alt="image"></p>
-<h2 id="java中的NIO"><a href="#java中的NIO" class="headerlink" title="java中的NIO"></a>java中的NIO</h2><h6 id="BIO同步阻塞"><a href="#BIO同步阻塞" class="headerlink" title="BIO同步阻塞"></a>BIO同步阻塞</h6><p>&emsp;&emsp;客户端在读取数据的时候会产生阻塞，直到有数据返回或者超时；服务器端也会一直阻塞到有客户端连接才会返回，每个客户端连接过来，服务器端后会启动一个线程去处理客户端的请求。<br><br>&emsp;&emsp;BIO的优点就是简单。缺点是当客户端过多的时候，会创建大量的线程去处理客户端的请求，线程资源都很宝贵，而且占用了大量的CPU时间。</p>
-<h6 id="NIO同步非阻塞"><a href="#NIO同步非阻塞" class="headerlink" title="NIO同步非阻塞"></a>NIO同步非阻塞</h6><h6 id="AIO异步非阻塞"><a href="#AIO异步非阻塞" class="headerlink" title="AIO异步非阻塞"></a>AIO异步非阻塞</h6><hr>
+<h2 id="java中的NIO"><a href="#java中的NIO" class="headerlink" title="java中的NIO"></a>java中的NIO</h2><h6 id="BIO同步阻塞"><a href="#BIO同步阻塞" class="headerlink" title="BIO同步阻塞"></a>BIO同步阻塞</h6><p>&emsp;&emsp;客户端在读取数据的时候会产生阻塞，直到有数据返回或者超时；服务器端也会一直阻塞到有客户端连接才会返回，每个客户端连接过来，服务器端后会启动一个线程去处理客户端的请求。<br><br>&emsp;&emsp;BIO的优点就是简单。缺点是当客户端过多的时候，会创建大量的线程去处理客户端的请求，线程资源都很宝贵，线程数量快速膨胀后，会导致系统的性能急剧下降，最终会导致系统宕掉。使用线程池可以限制线程的数量，但如果有大量的并发请求，超过最大数量的线程就只能等待，知道线程池中有空闲的线程可以被复用。</p>
+<h6 id="NIO同步非阻塞"><a href="#NIO同步非阻塞" class="headerlink" title="NIO同步非阻塞"></a>NIO同步非阻塞</h6><h6 id="AIO异步非阻塞"><a href="#AIO异步非阻塞" class="headerlink" title="AIO异步非阻塞"></a>AIO异步非阻塞</h6><h6 id="一张它们的对比图片"><a href="#一张它们的对比图片" class="headerlink" title="一张它们的对比图片"></a>一张它们的对比图片</h6><p><img src="https://raw.githubusercontent.com/dreamlate/hello-world/master/images/201712211101-io5.png" alt="image"></p>
+<hr>
 <p>参考文献<br></p>
 <ul>
 <li><a href="https://www.zhihu.com/question/19732473" target="_blank" rel="noopener">https://www.zhihu.com/question/19732473</a></li>
 <li><a href="http://blog.51cto.com/yaocoder/1308899" target="_blank" rel="noopener">http://blog.51cto.com/yaocoder/1308899</a></li>
+<li><a href="http://blog.csdn.net/anxpp/article/details/51512200" target="_blank" rel="noopener">http://blog.csdn.net/anxpp/article/details/51512200</a></li>
 </ul>
 
           
