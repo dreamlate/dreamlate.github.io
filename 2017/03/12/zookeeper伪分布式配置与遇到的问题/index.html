@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="zookeeper,分布式," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="&amp;emsp;&amp;emsp;zookeeper提供了单机、分布式和伪分布式三种模式。 123456#zookeeper的默认配置文件zoo.cfg：tickTime=2000initLimit=10syncLimit=5dataDir=/tmp/zookeeperclientPort=2181 &amp;emsp;&amp;emsp;条件有限，以伪分布式为例，将zookeeper文件夹复制三份，基本配置如下： 123">
+<meta name="keywords" content="zookeeper,分布式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="zookeeper伪分布式配置与遇到的问题">
+<meta property="og:url" content="http://yoursite.com/2017/03/12/zookeeper伪分布式配置与遇到的问题/index.html">
+<meta property="og:site_name" content="冰冷的梦境">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;zookeeper提供了单机、分布式和伪分布式三种模式。 123456#zookeeper的默认配置文件zoo.cfg：tickTime=2000initLimit=10syncLimit=5dataDir=/tmp/zookeeperclientPort=2181 &amp;emsp;&amp;emsp;条件有限，以伪分布式为例，将zookeeper文件夹复制三份，基本配置如下： 123">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-01-28T07:23:22.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="zookeeper伪分布式配置与遇到的问题">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;zookeeper提供了单机、分布式和伪分布式三种模式。 123456#zookeeper的默认配置文件zoo.cfg：tickTime=2000initLimit=10syncLimit=5dataDir=/tmp/zookeeperclientPort=2181 &amp;emsp;&amp;emsp;条件有限，以伪分布式为例，将zookeeper文件夹复制三份，基本配置如下： 123">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/03/12/zookeeper伪分布式配置与遇到的问题/"/>
+
+
+
+
+
+  <title>zookeeper伪分布式配置与遇到的问题 | 冰冷的梦境</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">冰冷的梦境</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/12/zookeeper伪分布式配置与遇到的问题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="dreamlate">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/user.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="冰冷的梦境">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">zookeeper伪分布式配置与遇到的问题</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-12T09:12:51+08:00">
+                2017-03-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/笔记/" itemprop="url" rel="index">
+                    <span itemprop="name">笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>&emsp;&emsp;zookeeper提供了单机、分布式和伪分布式三种模式。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#zookeeper的默认配置文件zoo.cfg：</span><br><span class="line">tickTime=2000</span><br><span class="line">initLimit=10</span><br><span class="line">syncLimit=5</span><br><span class="line">dataDir=/tmp/zookeeper</span><br><span class="line">clientPort=2181</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;条件有限，以伪分布式为例，将zookeeper文件夹复制三份，基本配置如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#第一个</span><br><span class="line">tickTime=2000</span><br><span class="line">initLimit=5</span><br><span class="line">syncLimit=2</span><br><span class="line">#我本机的目录</span><br><span class="line">dataDir=D:/zookeeper/zookeeper-3.4.9-1/data</span><br><span class="line">dataLogDir=D:/zookeeper/zookeeper-3.4.9-1/logs</span><br><span class="line">clientPort=2181</span><br><span class="line">server.1=localhost:7888:8888 </span><br><span class="line">server.2=localhost:7889:8889 </span><br><span class="line">server.3=localhost:7889:8890</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#第二个</span><br><span class="line">tickTime=2000</span><br><span class="line">initLimit=5</span><br><span class="line">syncLimit=2</span><br><span class="line">#我本机的目录</span><br><span class="line">dataDir=D:/zookeeper/zookeeper-3.4.9-2/data</span><br><span class="line">dataLogDir=D:/zookeeper/zookeeper-3.4.9-2/logs</span><br><span class="line">clientPort=2182</span><br><span class="line">server.1=localhost:7888:8888 </span><br><span class="line">server.2=localhost:7889:8889 </span><br><span class="line">server.3=localhost:7889:8890</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#第三个</span><br><span class="line">tickTime=2000</span><br><span class="line">initLimit=5</span><br><span class="line">syncLimit=2</span><br><span class="line">#我本机的目录</span><br><span class="line">dataDir=D:/zookeeper/zookeeper-3.4.9-3/data</span><br><span class="line">dataLogDir=D:/zookeeper/zookeeper-3.4.9-3/logs</span><br><span class="line">clientPort=2183</span><br><span class="line">server.1=localhost:7888:8888 </span><br><span class="line">server.2=localhost:7889:8889 </span><br><span class="line">server.3=localhost:7889:8890</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;伪分布式和分布式配置的区别在于，<strong>伪分布式配置IP地址相同，端口号不同</strong>。<br><br>&emsp;&emsp;其中，localhost:7889:8890，第一个端口号用来通信，第二个端口号用来进行leader选举。</p>
+<p>&emsp;&emsp;windows系统使用%zk_home%/bin目录下的zkServer.cmd启动zookeeper。由于在伪分布式下部署了三个节点，所以依次进入每个文件夹中，启动zookeeper。启动的时候可能会报错。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">2017-02-09 14:21:38,871 [myid:] - ERROR [main:QuorumPeerMain@85] - Invalid confi</span><br><span class="line">g, exiting abnormally</span><br><span class="line">org.apache.zookeeper.server.quorum.QuorumPeerConfig$ConfigException: Error proce</span><br><span class="line">ssing D:\zookeeper\zookeeper-3.4.9-1\bin\..\conf\zoo.cfg</span><br><span class="line">        at org.apache.zookeeper.server.quorum.QuorumPeerConfig.parse(QuorumPeerC</span><br><span class="line">onfig.java:144)</span><br><span class="line">        at org.apache.zookeeper.server.quorum.QuorumPeerMain.initializeAndRun(Qu</span><br><span class="line">orumPeerMain.java:101)</span><br><span class="line">        at org.apache.zookeeper.server.quorum.QuorumPeerMain.main(QuorumPeerMain</span><br><span class="line">.java:78)</span><br><span class="line">Caused by: java.lang.IllegalArgumentException: D:\zookeeper\zookeeper-3.4.9-1\da</span><br><span class="line">ta\myid file is missing</span><br><span class="line">        at org.apache.zookeeper.server.quorum.QuorumPeerConfig.parseProperties(Q</span><br><span class="line">uorumPeerConfig.java:362)</span><br><span class="line">        at org.apache.zookeeper.server.quorum.QuorumPeerConfig.parse(QuorumPeerC</span><br><span class="line">onfig.java:140)</span><br><span class="line">        ... 2 more</span><br><span class="line">Invalid config, exiting abnormally</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;错误原因是没有找到myid这个文件（如11、12行），需要在配置文件dataDir指定的目录下面（我的是：D:\zookeeper\zookeeper-3.4.9-1\data）建立一个myid文件，内容为1。依次在剩下的两个文件夹中也建立一个myid的文件，内容分别为2和3。</p>
+<p>&emsp;&emsp;保存后，再次启动，发现又出现异常了，异常比较多，仅截取部分：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">2017-02-09 14:32:32,467 [myid:1] - WARN  [QuorumPeer[myid=1]/0:0:0:0:0:0:0:0:218</span><br><span class="line">1:QuorumCnxManager@400] - Cannot open channel to 3 at election address localhost</span><br><span class="line">/127.0.0.1:8890</span><br><span class="line">java.net.ConnectException: Connection refused: connect</span><br><span class="line">        at java.net.DualStackPlainSocketImpl.waitForConnect(Native Method)</span><br><span class="line">        at java.net.DualStackPlainSocketImpl.socketConnect(DualStackPlainSocketI</span><br><span class="line">mpl.java:85)</span><br><span class="line">        at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.ja</span><br><span class="line">va:350)</span><br><span class="line">        at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocket</span><br><span class="line">Impl.java:206)</span><br><span class="line">        at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java</span><br><span class="line">:188)</span><br><span class="line">        at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:172)</span><br><span class="line">        at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392)</span><br><span class="line">        at java.net.Socket.connect(Socket.java:589)</span><br><span class="line">        at org.apache.zookeeper.server.quorum.QuorumCnxManager.connectOne(Quorum</span><br><span class="line">CnxManager.java:381)</span><br><span class="line">        at org.apache.zookeeper.server.quorum.QuorumCnxManager.connectAll(Quorum</span><br><span class="line">CnxManager.java:426)</span><br><span class="line">        at org.apache.zookeeper.server.quorum.FastLeaderElection.lookForLeader(F</span><br><span class="line">astLeaderElection.java:843)</span><br><span class="line">        at org.apache.zookeeper.server.quorum.QuorumPeer.run(QuorumPeer.java:822</span><br><span class="line">)</span><br><span class="line">2017-02-09 14:32:32,623 [myid:1] - INFO  [QuorumPeer[myid=1]/0:0:0:0:0:0:0:0:218</span><br><span class="line">1:QuorumPeer$QuorumServer@149] - Resolved hostname: localhost to address: localh</span><br><span class="line">ost/127.0.0.1</span><br><span class="line">2017-02-09 14:32:32,623 [myid:1] - INFO  [QuorumPeer[myid=1]/0:0:0:0:0:0:0:0:218</span><br><span class="line">1:FastLeaderElection@852] - Notification time out: 12800</span><br><span class="line">2017-02-09 14:32:46,468 [myid:1] - WARN  [QuorumPeer[myid=1]/0:0:0:0:0:0:0:0:218</span><br><span class="line">1:QuorumCnxManager@400] - Cannot open channel to 2 at election address localhost</span><br><span class="line">/127.0.0.1:8889</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这个异常其实可以忽略，仔细看2、3、31、32行打印出的信息就明白了。出现这个异常的原因是因为，现在只启动了一个zk节点，而在配置文件中却写了三个zk的地址，第一个zk节点还无法与剩下的两个节点进行通信，所以只要把三个zk节点都启动就没问题了。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/zookeeper/" rel="tag"># zookeeper</a>
+          
+            <a href="/tags/分布式/" rel="tag"># 分布式</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/29/http-and-https/" rel="next" title="http and https">
+                <i class="fa fa-chevron-left"></i> http and https
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/03/13/对zookeeper的理解/" rel="prev" title="对zookeeper的理解">
+                对zookeeper的理解 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel sidebar-panel-active">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/user.png"
+               alt="dreamlate" />
+          <p class="site-author-name" itemprop="name">dreamlate</p>
+           
+              <p class="site-description motion-element" itemprop="description">for the dream</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">38</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dreamlate</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

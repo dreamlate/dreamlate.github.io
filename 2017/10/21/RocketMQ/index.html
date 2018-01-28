@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="RocketMQ,消息队列," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="RocketMQProducer&amp;emsp;&amp;emsp;消息生产者，负责产生消息，一般由业务系统负责产生消息。 Producer Group&amp;emsp;&amp;emsp;生产者组，一类Producer的集合名称，这类Producer通常发送一类消息，且发送逻辑一致。 Consumer&amp;emsp;&amp;emsp;消息消费者，消费MQ上的消息的应用程序就是消费者，根据业务的需要对消息进行不同的处理，一般是后台系">
+<meta name="keywords" content="RocketMQ,消息队列">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RocketMQ">
+<meta property="og:url" content="http://yoursite.com/2017/10/21/RocketMQ/index.html">
+<meta property="og:site_name" content="冰冷的梦境">
+<meta property="og:description" content="RocketMQProducer&amp;emsp;&amp;emsp;消息生产者，负责产生消息，一般由业务系统负责产生消息。 Producer Group&amp;emsp;&amp;emsp;生产者组，一类Producer的集合名称，这类Producer通常发送一类消息，且发送逻辑一致。 Consumer&amp;emsp;&amp;emsp;消息消费者，消费MQ上的消息的应用程序就是消费者，根据业务的需要对消息进行不同的处理，一般是后台系">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/dreamlate/hello-world/master/images/201801202213rocketmq-physical-structure.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/dreamlate/hello-world/master/images/201801202034rocketmq-logic-structure.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/dreamlate/hello-world/master/images/201801202251rocketmq-save-structure.png">
+<meta property="og:updated_time" content="2018-01-28T06:56:59.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RocketMQ">
+<meta name="twitter:description" content="RocketMQProducer&amp;emsp;&amp;emsp;消息生产者，负责产生消息，一般由业务系统负责产生消息。 Producer Group&amp;emsp;&amp;emsp;生产者组，一类Producer的集合名称，这类Producer通常发送一类消息，且发送逻辑一致。 Consumer&amp;emsp;&amp;emsp;消息消费者，消费MQ上的消息的应用程序就是消费者，根据业务的需要对消息进行不同的处理，一般是后台系">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/dreamlate/hello-world/master/images/201801202213rocketmq-physical-structure.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/10/21/RocketMQ/"/>
+
+
+
+
+
+  <title>RocketMQ | 冰冷的梦境</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">冰冷的梦境</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/10/21/RocketMQ/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="dreamlate">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/user.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="冰冷的梦境">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">RocketMQ</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-10-21T14:55:03+08:00">
+                2017-10-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RocketMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RocketMQ</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="RocketMQ"><a href="#RocketMQ" class="headerlink" title="RocketMQ"></a>RocketMQ</h2><h3 id="Producer"><a href="#Producer" class="headerlink" title="Producer"></a>Producer</h3><p>&emsp;&emsp;消息生产者，负责产生消息，一般由业务系统负责产生消息。</p>
+<h3 id="Producer-Group"><a href="#Producer-Group" class="headerlink" title="Producer Group"></a>Producer Group</h3><p>&emsp;&emsp;生产者组，一类Producer的集合名称，这类Producer通常发送一类消息，且发送逻辑一致。</p>
+<h3 id="Consumer"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</h3><p>&emsp;&emsp;消息消费者，消费MQ上的消息的应用程序就是消费者，根据业务的需要对消息进行不同的处理，一般是后台系统负责异步消费。</p>
+<h3 id="Push-Consumer"><a href="#Push-Consumer" class="headerlink" title="Push Consumer"></a>Push Consumer</h3><p>&emsp;&emsp;Consumer的一种，应用通常向consumer对象注册一个listener接口，一旦收到消息，consumer对象立刻回调listener接口方法。</p>
+<h3 id="Pull-Consumber"><a href="#Pull-Consumber" class="headerlink" title="Pull Consumber"></a>Pull Consumber</h3><p>&emsp;&emsp;Consumer的一种，应用通常主动调用consumer的拉消息方法从broker拉消息，主动权由应用控制。</p>
+<h3 id="Consumer-Group"><a href="#Consumer-Group" class="headerlink" title="Consumer Group"></a>Consumer Group</h3><p>&emsp;&emsp;消费者组，和生产者组类似，消费同一类消息的多个consumer示例组成的一个消费者组，消费逻辑一致。</p>
+<h3 id="Topic"><a href="#Topic" class="headerlink" title="Topic"></a>Topic</h3><p>&emsp;&emsp;Topic是一种消息的逻辑分类，比如在电商中订单、商品、活动等产生的消息，都需要进行分类。订单的消息放到订单的topic，活动的消息放到活动的topic。</p>
+<h3 id="Message"><a href="#Message" class="headerlink" title="Message"></a>Message</h3><p>&emsp;&emsp;Message是消息的载体。一个message必须指定topic，相当于寄信的地址。Message还可以设置一个可选的tag设置，以便消费端可以基于tag进行消息过滤。</p>
+<h3 id="Tag"><a href="#Tag" class="headerlink" title="Tag"></a>Tag</h3><p>&emsp;&emsp;Tag可以被认为是topic的进一步细化。一般在相同的业务模块中通过引入标签来标记不同用途的消息。</p>
+<h3 id="Broker"><a href="#Broker" class="headerlink" title="Broker"></a>Broker</h3><p>&emsp;&emsp;Broker是RocketMQ系统的主要角色，broker接收来自生产者的消息，储存以及为消费者拉取消息的请求做好准备。一般也称为server，在JMS规范中称为Provider。</p>
+<h3 id="Name-Server"><a href="#Name-Server" class="headerlink" title="Name Server"></a>Name Server</h3><p>&emsp;&emsp;Name Server为producer和consumer提供路由信息。作用和zookeeper一样，轻量级的。</p>
+<h3 id="广播消费"><a href="#广播消费" class="headerlink" title="广播消费"></a>广播消费</h3><p>&emsp;&emsp;一条消息被多个consumer消费，即使这些consumer属于同一个consumer group，消息也会被consumer group中的每个consumer都消费一次，广播消费中的consumer group概念可以认为在消息划分方面无意义。<br>&emsp;&emsp;在CORBA Notification规范中，消费方式都属于广播消费。在JMS规范中，相当于JMS publish/subscribe model。</p>
+<h3 id="集群消费"><a href="#集群消费" class="headerlink" title="集群消费"></a>集群消费</h3><p>&emsp;&emsp;一个consumer group中的consumer实例平均分摊消费信息。例如某个topic有9条消息，其中一个consumer group有3个实例（可能是三个进程，也可能是三台机器），那么每个实例消费其中的3条消息。</p>
+<h3 id="顺序消息"><a href="#顺序消息" class="headerlink" title="顺序消息"></a>顺序消息</h3><p>&emsp;&emsp;消费消息的顺序要同发送消息的顺序一致，在rocketmq中，主要指的是局部顺序，即一类消息为满足顺序性，必须producer单线程顺序发送，且发送到同一个队列，这样consumer就可以按照producer发送的顺序去消费消息。</p>
+<h3 id="普通顺序消息"><a href="#普通顺序消息" class="headerlink" title="普通顺序消息"></a>普通顺序消息</h3><p>&emsp;&emsp;顺序消息的一种，正常情况下可以保证完全的顺序消息，但是一旦发生通信异常，broker重启，由于队列总数发生变化，哈希取模后定位的队列会发生变化，产生短暂的消息顺序不一致。如果业务能容忍在集群异常情况下（如某个broker宕机或者重启）下，消息短暂的乱序，使用普通顺序方式比较合适。</p>
+<h3 id="严格顺序消息"><a href="#严格顺序消息" class="headerlink" title="严格顺序消息"></a>严格顺序消息</h3><p>&emsp;&emsp;顺序消息的一种，无论正常异常情况下都能保证顺序，但是牺牲了分布式failover特性，即broker集群中只要有一台机器不可用，则整个集群都不可用，服务可用性大大降低。如果服务器部署为同步双写模式，此缺陷可通过备机自主切换为主避免，不过仍然会存在几分钟的服务不可用。<br><br>&emsp;&emsp;目前已知的应用只有数据库binlog同步强依赖严格顺序消息，其他应用大部分都可以容忍短暂乱序，推荐使用普通的顺序消息。</p>
+<h3 id="message-queue"><a href="#message-queue" class="headerlink" title="message queue"></a>message queue</h3><p>&emsp;&emsp;在rocketmq中，所有消息队列都是持久化，长度无限的数据结构，所谓长度无限是指队列中的每个存储单元都是定长，访问其中的存储单元使用offset来访问，offset为java long类型，64位，理论上在100年内不会溢出，所以认为是长度无限的，另外队列中只保存最近几天的数据，之前的数据会按照过期时间来删除。<br><br>&emsp;&emsp;也可以认为message queue是一个长度无限的数组，offset就是下标。</p>
+<h2 id="RocketMQ特点"><a href="#RocketMQ特点" class="headerlink" title="RocketMQ特点"></a>RocketMQ特点</h2><ul>
+<li>是一个队列模型的消息中间件，具有高性能、高可靠性、高实时、分布式特点。</li>
+<li>Producer、Consumer、队列都可以是分布式。</li>
+<li>Producer向一些队列轮流发送消息，队列集合称为Topic。Consumer如果做广播消费，则一个consumer示例消费这个Topic对应的所有队列；如果做集群消费，则多个Consumer实例平均消费这个topic对应的队列集合。</li>
+<li>能够保证严格的消息顺序。</li>
+<li>提供丰富的消息拉取模式。</li>
+<li>高效的订阅者水平拓展能力。</li>
+<li>实时的消息订阅机制。</li>
+<li>亿级消息堆积能力。</li>
+<li>较少的依赖。</li>
+</ul>
+<h2 id="RocketMQ物理部署结构"><a href="#RocketMQ物理部署结构" class="headerlink" title="RocketMQ物理部署结构"></a>RocketMQ物理部署结构</h2><p><img src="https://raw.githubusercontent.com/dreamlate/hello-world/master/images/201801202213rocketmq-physical-structure.png" alt="image"></p>
+<ul>
+<li>Name Server是一个几乎无状态节点，可集群部署，节点间无任何信息同步。</li>
+<li>Broker部署相对复杂，Broker分为Master与Slave，一个Master可以对应多个Slave，但是一个Slave只能对应一个Master，Master与Slave的对应关系通过指定相同的BrokerName，不同的BrokerId来定义，BrokerId为0表示Master，非0表示Slave。Master也可以部署多个。每个Broker与Name Server集群中的所有节点建立长连接，定时注册Topic信息到所有的Name Server。</li>
+<li>Producer与Name Server集群中的其中一个节点（随机选择）建立长连接，定期从Name Server取Topic路由信息，并向提供Topic服务的Master建立长连接，且定时向Master发送心跳。Producer完全无状态，可集群部署。</li>
+<li>Consumer与Name Server集群中的一个节点（随机选择）建立长连接，定期从Name Server取Topic路由信息，并向提供Topic服务的Master、Slave建立长连接，且定时向Master、Slave发送心跳。Consumer既可以从Master订阅消息，也可以从Slave订阅消息，订阅规则由Broker配置决定。</li>
+</ul>
+<h2 id="RocketMQ逻辑部署结构"><a href="#RocketMQ逻辑部署结构" class="headerlink" title="RocketMQ逻辑部署结构"></a>RocketMQ逻辑部署结构</h2><p><img src="https://raw.githubusercontent.com/dreamlate/hello-world/master/images/201801202034rocketmq-logic-structure.png" alt="image"></p>
+<h3 id="Producer-Group-1"><a href="#Producer-Group-1" class="headerlink" title="Producer Group"></a>Producer Group</h3><p>&emsp;&emsp;用来表示一个发送消息的应用，一个Producer Group下包含多个Producer实例，可以使多台机器，也可以是一台机器的多个进程，或者一个进程的多个Producer对象。一个Producer Group可以发送多个Topic消息，Producer Group的作用如下：</p>
+<ul>
+<li>标识一类Producer。</li>
+<li>可以通过运维工具查询这个发送消息应用下有多个Producer实例。</li>
+<li>发送分布式事务消息时，如果Producer中途意外宕机，Broker会主动回调Producer Group内任意一台机器来确认事务状态。</li>
+</ul>
+<h3 id="Consumer-Group-1"><a href="#Consumer-Group-1" class="headerlink" title="Consumer Group"></a>Consumer Group</h3><p>&emsp;&emsp;用来表示一个消费消息应用，一个Consumer Group下包含多个consumer实例，可以是多台机器，也可以是多个进程，<strong>或者是一个进程下的多个consumer对象</strong>。一个Consumer Group下的多个consumer以均摊方式消费消息，如果设置为广播方式，那么这个Consumer Group下的每个实例都消费全量数据。</p>
+<h2 id="RocketMQ数据存储结构"><a href="#RocketMQ数据存储结构" class="headerlink" title="RocketMQ数据存储结构"></a>RocketMQ数据存储结构</h2><p><img src="https://raw.githubusercontent.com/dreamlate/hello-world/master/images/201801202251rocketmq-save-structure.png" alt="image"></p>
+<p>&emsp;&emsp;RocketMQ采取一种数据与索引分离的存储方法。有效降低文件资源、IO资源，内存资源的损耗。对于海量数据、高并发场景也能有效降低端到端延迟，并具备较强的横向拓展能力。</p>
+<h2 id="RocketMQ分布式消息系统"><a href="#RocketMQ分布式消息系统" class="headerlink" title="RocketMQ分布式消息系统"></a>RocketMQ分布式消息系统</h2><h3 id="消息顺序"><a href="#消息顺序" class="headerlink" title="消息顺序"></a>消息顺序</h3><p>&emsp;&emsp;例如订单创建、订单付款、订单完成，需要保证消费的顺序才有意义。所以可以将这几条消息发送到同一个topic队列中，并让同一个消费者来消费，这样就能保证消息的顺序消费。</p>
+<p>producer：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">SendResult sendResult = producer.send(msg, new MessageQueueSelector() &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public MessageQueue select(List&lt;MessageQueue&gt; mqs, Message msg, Object arg) &#123;</span><br><span class="line">        Integer id = (Integer) arg;</span><br><span class="line">        int index = id % mqs.size();</span><br><span class="line">        return mqs.get(index);</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;, orderId</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>consumer：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">consumer.registerMessageListener(new MessageListenerOrderly() &#123;</span><br><span class="line"></span><br><span class="line">    AtomicLong consumeTimes = new AtomicLong(0);</span><br><span class="line">    @Override</span><br><span class="line">    public ConsumeOrderlyStatus consumeMessage(List&lt;MessageExt&gt; msgs,</span><br><span class="line">                ConsumeOrderlyContext context) &#123;</span><br><span class="line">        context.setAutoCommit(false);</span><br><span class="line">        System.out.printf(Thread.currentThread().getName() + &quot; Receive New Messages: &quot; + msgs + &quot;%n&quot;);</span><br><span class="line">        this.consumeTimes.incrementAndGet();</span><br><span class="line">        if ((this.consumeTimes.get() % 2) == 0) &#123;</span><br><span class="line">            return ConsumeOrderlyStatus.SUCCESS;</span><br><span class="line">        &#125; else if ((this.consumeTimes.get() % 3) == 0) &#123;</span><br><span class="line">            return ConsumeOrderlyStatus.ROLLBACK;</span><br><span class="line">        &#125; else if ((this.consumeTimes.get() % 4) == 0) &#123;</span><br><span class="line">            return ConsumeOrderlyStatus.COMMIT;</span><br><span class="line">        &#125; else if ((this.consumeTimes.get() % 5) == 0) &#123;</span><br><span class="line">            context.setSuspendCurrentQueueTimeMillis(3000);</span><br><span class="line">            return ConsumeOrderlyStatus.SUSPEND_CURRENT_QUEUE_A_MOMENT;</span><br><span class="line">        &#125;</span><br><span class="line">        return ConsumeOrderlyStatus.SUCCESS;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="消息重复"><a href="#消息重复" class="headerlink" title="消息重复"></a>消息重复</h3><ul>
+<li>消费端处理消息的业务逻辑保持幂等性</li>
+<li>保证每条消息都有唯一编号且保证消息处理成功与去重表的日志同时出现</li>
+</ul>
+<p>&emsp;&emsp;RocketMQ不保证消息不重复，如果业务需要保证严格的不重复消息，需要自己在业务端去重。</p>
+<hr>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="http://jm.taobao.org/2017/01/12/rocketmq-quick-start-in-10-minutes/" target="_blank" rel="noopener">http://jm.taobao.org/2017/01/12/rocketmq-quick-start-in-10-minutes/</a></li>
+<li><a href="https://www.jianshu.com/p/824066d70da8" target="_blank" rel="noopener">https://www.jianshu.com/p/824066d70da8</a></li>
+<li><a href="https://www.jianshu.com/p/453c6e7ff81c" target="_blank" rel="noopener">https://www.jianshu.com/p/453c6e7ff81c</a></li>
+<li><a href="http://rocketmq.apache.org/docs/order-example/" target="_blank" rel="noopener">http://rocketmq.apache.org/docs/order-example/</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/RocketMQ/" rel="tag"># RocketMQ</a>
+          
+            <a href="/tags/消息队列/" rel="tag"># 消息队列</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/18/电商-购物车/" rel="next" title="电商-购物车">
+                <i class="fa fa-chevron-left"></i> 电商-购物车
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/11/28/通过fastjson将Long类型转换成String类型/" rel="prev" title="通过fastjson将Long类型转换成String类型">
+                通过fastjson将Long类型转换成String类型 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/user.png"
+               alt="dreamlate" />
+          <p class="site-author-name" itemprop="name">dreamlate</p>
+           
+              <p class="site-description motion-element" itemprop="description">for the dream</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">22</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">38</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#RocketMQ"><span class="nav-number">1.</span> <span class="nav-text"><a href="#RocketMQ" class="headerlink" title="RocketMQ"></a>RocketMQ</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Producer"><span class="nav-number">1.1.</span> <span class="nav-text"><a href="#Producer" class="headerlink" title="Producer"></a>Producer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Producer-Group"><span class="nav-number">1.2.</span> <span class="nav-text"><a href="#Producer-Group" class="headerlink" title="Producer Group"></a>Producer Group</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consumer"><span class="nav-number">1.3.</span> <span class="nav-text"><a href="#Consumer" class="headerlink" title="Consumer"></a>Consumer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Push-Consumer"><span class="nav-number">1.4.</span> <span class="nav-text"><a href="#Push-Consumer" class="headerlink" title="Push Consumer"></a>Push Consumer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Pull-Consumber"><span class="nav-number">1.5.</span> <span class="nav-text"><a href="#Pull-Consumber" class="headerlink" title="Pull Consumber"></a>Pull Consumber</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consumer-Group"><span class="nav-number">1.6.</span> <span class="nav-text"><a href="#Consumer-Group" class="headerlink" title="Consumer Group"></a>Consumer Group</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Topic"><span class="nav-number">1.7.</span> <span class="nav-text"><a href="#Topic" class="headerlink" title="Topic"></a>Topic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Message"><span class="nav-number">1.8.</span> <span class="nav-text"><a href="#Message" class="headerlink" title="Message"></a>Message</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Tag"><span class="nav-number">1.9.</span> <span class="nav-text"><a href="#Tag" class="headerlink" title="Tag"></a>Tag</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Broker"><span class="nav-number">1.10.</span> <span class="nav-text"><a href="#Broker" class="headerlink" title="Broker"></a>Broker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Name-Server"><span class="nav-number">1.11.</span> <span class="nav-text"><a href="#Name-Server" class="headerlink" title="Name Server"></a>Name Server</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#广播消费"><span class="nav-number">1.12.</span> <span class="nav-text"><a href="#&#x5E7F;&#x64AD;&#x6D88;&#x8D39;" class="headerlink" title="&#x5E7F;&#x64AD;&#x6D88;&#x8D39;"></a>&#x5E7F;&#x64AD;&#x6D88;&#x8D39;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#集群消费"><span class="nav-number">1.13.</span> <span class="nav-text"><a href="#&#x96C6;&#x7FA4;&#x6D88;&#x8D39;" class="headerlink" title="&#x96C6;&#x7FA4;&#x6D88;&#x8D39;"></a>&#x96C6;&#x7FA4;&#x6D88;&#x8D39;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#顺序消息"><span class="nav-number">1.14.</span> <span class="nav-text"><a href="#&#x987A;&#x5E8F;&#x6D88;&#x606F;" class="headerlink" title="&#x987A;&#x5E8F;&#x6D88;&#x606F;"></a>&#x987A;&#x5E8F;&#x6D88;&#x606F;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#普通顺序消息"><span class="nav-number">1.15.</span> <span class="nav-text"><a href="#&#x666E;&#x901A;&#x987A;&#x5E8F;&#x6D88;&#x606F;" class="headerlink" title="&#x666E;&#x901A;&#x987A;&#x5E8F;&#x6D88;&#x606F;"></a>&#x666E;&#x901A;&#x987A;&#x5E8F;&#x6D88;&#x606F;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#严格顺序消息"><span class="nav-number">1.16.</span> <span class="nav-text"><a href="#&#x4E25;&#x683C;&#x987A;&#x5E8F;&#x6D88;&#x606F;" class="headerlink" title="&#x4E25;&#x683C;&#x987A;&#x5E8F;&#x6D88;&#x606F;"></a>&#x4E25;&#x683C;&#x987A;&#x5E8F;&#x6D88;&#x606F;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#message-queue"><span class="nav-number">1.17.</span> <span class="nav-text"><a href="#message-queue" class="headerlink" title="message queue"></a>message queue</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RocketMQ特点"><span class="nav-number">2.</span> <span class="nav-text"><a href="#RocketMQ&#x7279;&#x70B9;" class="headerlink" title="RocketMQ&#x7279;&#x70B9;"></a>RocketMQ&#x7279;&#x70B9;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RocketMQ物理部署结构"><span class="nav-number">3.</span> <span class="nav-text"><a href="#RocketMQ&#x7269;&#x7406;&#x90E8;&#x7F72;&#x7ED3;&#x6784;" class="headerlink" title="RocketMQ&#x7269;&#x7406;&#x90E8;&#x7F72;&#x7ED3;&#x6784;"></a>RocketMQ&#x7269;&#x7406;&#x90E8;&#x7F72;&#x7ED3;&#x6784;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RocketMQ逻辑部署结构"><span class="nav-number">4.</span> <span class="nav-text"><a href="#RocketMQ&#x903B;&#x8F91;&#x90E8;&#x7F72;&#x7ED3;&#x6784;" class="headerlink" title="RocketMQ&#x903B;&#x8F91;&#x90E8;&#x7F72;&#x7ED3;&#x6784;"></a>RocketMQ&#x903B;&#x8F91;&#x90E8;&#x7F72;&#x7ED3;&#x6784;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Producer-Group-1"><span class="nav-number">4.1.</span> <span class="nav-text"><a href="#Producer-Group-1" class="headerlink" title="Producer Group"></a>Producer Group</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Consumer-Group-1"><span class="nav-number">4.2.</span> <span class="nav-text"><a href="#Consumer-Group-1" class="headerlink" title="Consumer Group"></a>Consumer Group</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RocketMQ数据存储结构"><span class="nav-number">5.</span> <span class="nav-text"><a href="#RocketMQ&#x6570;&#x636E;&#x5B58;&#x50A8;&#x7ED3;&#x6784;" class="headerlink" title="RocketMQ&#x6570;&#x636E;&#x5B58;&#x50A8;&#x7ED3;&#x6784;"></a>RocketMQ&#x6570;&#x636E;&#x5B58;&#x50A8;&#x7ED3;&#x6784;</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RocketMQ分布式消息系统"><span class="nav-number">6.</span> <span class="nav-text"><a href="#RocketMQ&#x5206;&#x5E03;&#x5F0F;&#x6D88;&#x606F;&#x7CFB;&#x7EDF;" class="headerlink" title="RocketMQ&#x5206;&#x5E03;&#x5F0F;&#x6D88;&#x606F;&#x7CFB;&#x7EDF;"></a>RocketMQ&#x5206;&#x5E03;&#x5F0F;&#x6D88;&#x606F;&#x7CFB;&#x7EDF;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#消息顺序"><span class="nav-number">6.1.</span> <span class="nav-text"><a href="#&#x6D88;&#x606F;&#x987A;&#x5E8F;" class="headerlink" title="&#x6D88;&#x606F;&#x987A;&#x5E8F;"></a>&#x6D88;&#x606F;&#x987A;&#x5E8F;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#消息重复"><span class="nav-number">6.2.</span> <span class="nav-text"><a href="#&#x6D88;&#x606F;&#x91CD;&#x590D;" class="headerlink" title="&#x6D88;&#x606F;&#x91CD;&#x590D;"></a>&#x6D88;&#x606F;&#x91CD;&#x590D;</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">7.</span> <span class="nav-text"><a href="#&#x53C2;&#x8003;" class="headerlink" title="&#x53C2;&#x8003;"></a>&#x53C2;&#x8003;</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dreamlate</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
